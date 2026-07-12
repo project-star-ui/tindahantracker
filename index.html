@@ -6,75 +6,48 @@
     <title>BentaTrack • Store Manager</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+        import { getDatabase, ref, onValue, push, set, remove } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBWQgSLhiVCSjRkrjPsip6tcBa4JfsvBko",
+            authDomain: "messagingfun.firebaseapp.com",
+            databaseURL: "https://messagingfun-default-rtdb.firebaseio.com",
+            projectId: "messagingfun",
+            storageBucket: "messagingfun.firebasestorage.app",
+            messagingSenderId: "367300537898",
+            appId: "1:367300537898:web:27fc389e88240be82f5d53"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.db = getDatabase(app);
+        window.firebaseRefs = { ref, onValue, push, set, remove };
+    </script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap');
         
-        body {
-            font-family: 'Inter', system_ui, sans-serif;
-        }
-        
-        .logo-font {
-            font-family: 'Poppins', sans-serif;
-        }
+        body { font-family: 'Inter', system_ui, sans-serif; }
+        .logo-font { font-family: 'Poppins', sans-serif; }
+        .tiktok-gradient { background: linear-gradient(135deg, #FF0050, #00F2EA); }
 
-        .tiktok-gradient {
-            background: linear-gradient(135deg, #FF0050, #00F2EA);
-        }
+        .card-hover { transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .card-hover:hover { transform: translateY(-8px) scale(1.02); }
 
-        .card-hover {
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        
-        .card-hover:hover {
-            transform: translateY(-8px) scale(1.02);
-        }
-
-        .modal {
-            animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        
+        .modal { animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
         @keyframes popIn {
             0% { transform: scale(0.7) translateY(30px); opacity: 0; }
             100% { transform: scale(1) translateY(0); opacity: 1; }
         }
 
-        .bottom-nav {
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .table-container {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* Scrollable Recent Activity */
-        .recent-scroll {
-            max-height: 420px; /* Increased height for better scrolling */
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: #FF0050 #27272A;
-        }
-
-        .recent-scroll::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .recent-scroll::-webkit-scrollbar-track {
-            background: #27272A;
-            border-radius: 10px;
-        }
-        
-        .recent-scroll::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, #FF0050, #00F2EA);
-            border-radius: 10px;
-        }
-
-        .stat-number {
-            font-variant-numeric: tabular-nums;
-        }
+        .bottom-nav { box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3); }
     </style>
 </head>
 <body class="bg-zinc-950 text-white min-h-screen">
+
     <!-- Mobile Top Nav -->
     <div class="md:hidden bg-black/95 border-b border-zinc-800 px-4 py-4 flex items-center justify-between sticky top-0 z-50 backdrop-blur-lg">
         <div class="flex items-center gap-3">
@@ -84,8 +57,8 @@
     </div>
 
     <div class="flex h-screen md:h-auto">
-        <!-- Sidebar (Desktop) -->
-        <div id="sidebar" class="sidebar w-72 bg-black border-r border-zinc-800 flex-col hidden md:flex h-full">
+        <!-- Sidebar -->
+        <div id="sidebar" class="w-72 bg-black border-r border-zinc-800 flex-col hidden md:flex h-full">
             <div class="p-6 border-b border-zinc-800">
                 <div class="flex items-center gap-3">
                     <div class="w-11 h-11 rounded-3xl tiktok-gradient flex items-center justify-center text-white font-bold text-3xl shadow-inner">💰</div>
@@ -95,105 +68,60 @@
                     </div>
                 </div>
             </div>
-            
             <div class="flex-1 p-4 overflow-auto">
                 <div class="space-y-2">
                     <a href="#" onclick="navigateTo('dashboard')" class="nav-link flex items-center gap-4 px-5 py-4 rounded-3xl hover:bg-zinc-900 text-white font-medium active" id="nav-dashboard">
-                        <i class="fa-solid fa-chart-line w-6 text-xl"></i>
-                        <span class="text-lg">Dashboard</span>
+                        <i class="fa-solid fa-chart-line w-6 text-xl"></i><span class="text-lg">Dashboard</span>
                     </a>
                     <a href="#" onclick="navigateTo('sales')" class="nav-link flex items-center gap-4 px-5 py-4 rounded-3xl hover:bg-zinc-900 text-zinc-400 hover:text-white font-medium" id="nav-sales">
-                        <i class="fa-solid fa-cart-shopping w-6 text-xl"></i>
-                        <span class="text-lg">Sales</span>
+                        <i class="fa-solid fa-cart-shopping w-6 text-xl"></i><span class="text-lg">Sales</span>
                     </a>
                     <a href="#" onclick="navigateTo('savings')" class="nav-link flex items-center gap-4 px-5 py-4 rounded-3xl hover:bg-zinc-900 text-zinc-400 hover:text-white font-medium" id="nav-savings">
-                        <i class="fa-solid fa-piggy-bank w-6 text-xl"></i>
-                        <span class="text-lg">Savings</span>
+                        <i class="fa-solid fa-piggy-bank w-6 text-xl"></i><span class="text-lg">Savings</span>
                     </a>
                 </div>
             </div>
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col h-screen md:h-auto overflow-hidden main-content">
-            <!-- Top Bar (Desktop) -->
+        <div class="flex-1 flex flex-col h-screen md:h-auto overflow-hidden">
             <div class="hidden md:flex bg-black/90 border-b border-zinc-800 px-8 py-6 items-center justify-between sticky top-0 z-50 backdrop-blur-lg">
                 <h1 id="page-title" class="text-4xl font-semibold tracking-tighter">Dashboard</h1>
                 <div id="current-date" class="font-mono text-xl text-zinc-400"></div>
             </div>
 
-            <!-- Page Content -->
             <div class="flex-1 overflow-auto p-4 md:p-8">
                 <!-- DASHBOARD -->
                 <div id="dashboard-page" class="page">
                     <div class="grid grid-cols-2 md:grid-cols-12 gap-4 md:gap-6">
-                        <!-- Total Sales / Income -->
-                        <div onclick="navigateTo('sales')" class="col-span-2 md:col-span-3 bg-zinc-900 rounded-3xl p-6 md:p-7 card-hover cursor-pointer border border-zinc-800 active:scale-95 transition-transform">
+                        <div onclick="navigateTo('sales')" class="col-span-2 md:col-span-3 bg-zinc-900 rounded-3xl p-6 md:p-7 card-hover cursor-pointer border border-zinc-800">
                             <div class="flex justify-between items-start">
-                                <div>
-                                    <div class="text-emerald-400 text-sm font-medium tracking-widest">TOTAL SALES</div>
-                                    <div id="dash-total-sales" class="text-4xl md:text-5xl font-bold font-mono mt-3 stat-number">₱0</div>
-                                </div>
+                                <div><div class="text-emerald-400 text-sm font-medium tracking-widest">TOTAL SALES</div>
+                                <div id="dash-total-sales" class="text-4xl md:text-5xl font-bold font-mono mt-3 stat-number">₱0</div></div>
                                 <i class="fa-solid fa-cart-shopping text-4xl text-emerald-400/30"></i>
                             </div>
                         </div>
-                        
-                        <!-- Net From Sales -->
                         <div class="col-span-2 md:col-span-3 bg-zinc-900 rounded-3xl p-6 md:p-7 card-hover border border-zinc-800">
                             <div class="flex justify-between items-start">
-                                <div>
-                                    <div class="text-cyan-400 text-sm font-medium tracking-widest">NET FROM SALES</div>
-                                    <div id="dash-net-sales" class="text-4xl md:text-5xl font-bold font-mono mt-3 stat-number">₱0</div>
-                                </div>
+                                <div><div class="text-cyan-400 text-sm font-medium tracking-widest">NET FROM SALES</div>
+                                <div id="dash-net-sales" class="text-4xl md:text-5xl font-bold font-mono mt-3 stat-number">₱0</div></div>
                                 <i class="fa-solid fa-minus-circle text-4xl text-cyan-400/30"></i>
                             </div>
                         </div>
-                        
-                        <!-- Savings -->
-                        <div onclick="navigateTo('savings')" class="col-span-2 md:col-span-3 bg-zinc-900 rounded-3xl p-6 md:p-7 card-hover cursor-pointer border border-zinc-800 active:scale-95 transition-transform">
+                        <div onclick="navigateTo('savings')" class="col-span-2 md:col-span-3 bg-zinc-900 rounded-3xl p-6 md:p-7 card-hover cursor-pointer border border-zinc-800">
                             <div class="flex justify-between items-start">
-                                <div>
-                                    <div class="text-emerald-400 text-sm font-medium tracking-widest">SAVINGS</div>
-                                    <div id="dash-total-savings" class="text-4xl md:text-5xl font-bold font-mono mt-3 stat-number">₱0</div>
-                                </div>
+                                <div><div class="text-emerald-400 text-sm font-medium tracking-widest">SAVINGS</div>
+                                <div id="dash-total-savings" class="text-4xl md:text-5xl font-bold font-mono mt-3 stat-number">₱0</div></div>
                                 <i class="fa-solid fa-piggy-bank text-4xl text-emerald-400/30"></i>
                             </div>
                         </div>
-                        
-                        <!-- Net Balance -->
-                        <div class="col-span-2 md:col-span-3 bg-gradient-to-br from-pink-900 via-purple-900 to-cyan-900 rounded-3xl p-6 md:p-7 card-hover cursor-pointer border border-white/10 relative overflow-hidden active:scale-95 transition-transform">
+                        <div class="col-span-2 md:col-span-3 bg-gradient-to-br from-pink-900 via-purple-900 to-cyan-900 rounded-3xl p-6 md:p-7 card-hover cursor-pointer border border-white/10 relative overflow-hidden">
                             <div class="flex justify-between items-start">
-                                <div class="flex-1">
-                                    <div class="text-white text-sm font-medium tracking-widest">NET BALANCE</div>
-                                    <div id="dash-net-balance" class="text-4xl md:text-5xl font-bold font-mono mt-3 stat-number">₱0</div>
-                                </div>
+                                <div class="flex-1"><div class="text-white text-sm font-medium tracking-widest">NET BALANCE</div>
+                                <div id="dash-net-balance" class="text-4xl md:text-5xl font-bold font-mono mt-3 stat-number">₱0</div></div>
                                 <i class="fa-solid fa-wallet text-5xl text-white/30"></i>
                             </div>
                             <div class="absolute -bottom-6 -right-6 text-[110px] opacity-10">₱</div>
-                        </div>
-                    </div>
-
-                    <!-- Recent Activity -->
-                    <div class="mt-8 md:mt-10">
-                        <h2 class="text-2xl md:text-3xl font-semibold tracking-tighter mb-6">Recent Activity</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Recent Sales -->
-                            <div class="bg-zinc-900 rounded-3xl p-6">
-                                <div class="flex items-center gap-3 mb-4 border-b border-zinc-700 pb-3">
-                                    <i class="fa-solid fa-cart-shopping text-emerald-400"></i>
-                                    <span class="font-medium text-emerald-400">Recent Sales</span>
-                                </div>
-                                <div id="recent-sales" class="recent-scroll space-y-4"></div>
-                            </div>
-                            
-                            <!-- Recent Savings -->
-                            <div class="bg-zinc-900 rounded-3xl p-6">
-                                <div class="flex items-center gap-3 mb-4 border-b border-zinc-700 pb-3">
-                                    <i class="fa-solid fa-piggy-bank text-cyan-400"></i>
-                                    <span class="font-medium text-cyan-400">Recent Savings</span>
-                                </div>
-                                <div id="recent-savings" class="recent-scroll space-y-4"></div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -202,12 +130,12 @@
                 <div id="sales-page" class="page hidden">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl md:text-3xl font-semibold tracking-tighter">Sales History</h2>
-                        <button onclick="quickAdd('sales')" class="px-5 py-3 bg-gradient-to-r from-pink-500 to-cyan-500 rounded-3xl font-semibold flex items-center gap-2 text-sm md:text-base">
+                        <button onclick="quickAdd('sales')" class="px-5 py-3 bg-gradient-to-r from-pink-500 to-cyan-500 rounded-3xl font-semibold flex items-center gap-2">
                             <i class="fa-solid fa-plus"></i> New Sale
                         </button>
                     </div>
                     <div class="bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800">
-                        <div class="table-container">
+                        <div class="overflow-x-auto">
                             <table class="w-full min-w-[500px]">
                                 <thead>
                                     <tr class="border-b border-zinc-700">
@@ -215,7 +143,7 @@
                                         <th class="text-right p-5 md:p-6">INCOME</th>
                                         <th class="text-right p-5 md:p-6">BAWAS</th>
                                         <th class="text-right p-5 md:p-6">NET</th>
-                                        <th class="w-16"></th>
+                                        <th class="w-20"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="sales-body" class="divide-y divide-zinc-800"></tbody>
@@ -231,13 +159,13 @@
                         <div id="total-savings-display" class="font-mono text-2xl md:text-3xl text-emerald-400 font-bold"></div>
                     </div>
                     <div class="bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800">
-                        <div class="table-container">
+                        <div class="overflow-x-auto">
                             <table class="w-full min-w-[400px]">
                                 <thead>
                                     <tr class="border-b border-zinc-700">
                                         <th class="text-left p-5 md:p-6">DATE</th>
                                         <th class="text-right p-5 md:p-6">AMOUNT</th>
-                                        <th class="w-16"></th>
+                                        <th class="w-20"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="savings-body" class="divide-y divide-zinc-800"></tbody>
@@ -250,41 +178,27 @@
             <!-- Bottom Navigation -->
             <div class="md:hidden fixed bottom-0 left-0 right-0 bg-black/95 border-t border-zinc-800 z-50 bottom-nav">
                 <div class="flex items-center justify-around py-2">
-                    <button onclick="navigateTo('dashboard')" class="flex flex-col items-center py-2 px-4 text-white active:scale-95 transition-transform" id="bottom-nav-dashboard">
-                        <i class="fa-solid fa-chart-line text-2xl"></i>
-                        <span class="text-xs mt-1">Home</span>
-                    </button>
-                    <button onclick="navigateTo('sales')" class="flex flex-col items-center py-2 px-4 text-zinc-400 active:scale-95 transition-transform" id="bottom-nav-sales">
-                        <i class="fa-solid fa-cart-shopping text-2xl"></i>
-                        <span class="text-xs mt-1">Sales</span>
-                    </button>
-                    <button onclick="navigateTo('savings')" class="flex flex-col items-center py-2 px-4 text-zinc-400 active:scale-95 transition-transform" id="bottom-nav-savings">
-                        <i class="fa-solid fa-piggy-bank text-2xl"></i>
-                        <span class="text-xs mt-1">Savings</span>
-                    </button>
+                    <button onclick="navigateTo('dashboard')" class="flex flex-col items-center py-2 px-4 text-white" id="bottom-nav-dashboard"><i class="fa-solid fa-chart-line text-2xl"></i><span class="text-xs mt-1">Home</span></button>
+                    <button onclick="navigateTo('sales')" class="flex flex-col items-center py-2 px-4 text-zinc-400" id="bottom-nav-sales"><i class="fa-solid fa-cart-shopping text-2xl"></i><span class="text-xs mt-1">Sales</span></button>
+                    <button onclick="navigateTo('savings')" class="flex flex-col items-center py-2 px-4 text-zinc-400" id="bottom-nav-savings"><i class="fa-solid fa-piggy-bank text-2xl"></i><span class="text-xs mt-1">Savings</span></button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Floating Action Button -->
-    <button onclick="showQuickAddMenu()" 
-            class="md:hidden fixed bottom-20 right-6 w-14 h-14 bg-gradient-to-br from-pink-500 to-cyan-500 rounded-full flex items-center justify-center shadow-2xl shadow-pink-500/60 text-3xl z-50 active:scale-95 transition-transform">
+    <button onclick="showQuickAddMenu()" class="md:hidden fixed bottom-20 right-6 w-14 h-14 bg-gradient-to-br from-pink-500 to-cyan-500 rounded-full flex items-center justify-center shadow-2xl shadow-pink-500/60 text-3xl z-50 active:scale-95 transition-transform">
         <i class="fa-solid fa-plus"></i>
     </button>
 
     <!-- Quick Add Menu -->
     <div id="quick-add-menu" class="hidden fixed bottom-36 right-6 bg-zinc-900 rounded-3xl shadow-2xl py-3 w-60 z-50 border border-zinc-700">
         <div onclick="quickAdd('sales')" class="px-6 py-4 hover:bg-zinc-800 flex items-center gap-4 cursor-pointer">
-            <div class="w-9 h-9 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-400">
-                <i class="fa-solid fa-cart-shopping"></i>
-            </div>
+            <div class="w-9 h-9 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-400"><i class="fa-solid fa-cart-shopping"></i></div>
             <span class="font-medium">New Sale</span>
         </div>
         <div onclick="quickAdd('savings')" class="px-6 py-4 hover:bg-zinc-800 flex items-center gap-4 cursor-pointer">
-            <div class="w-9 h-9 bg-cyan-500/10 rounded-2xl flex items-center justify-center text-cyan-400">
-                <i class="fa-solid fa-piggy-bank"></i>
-            </div>
+            <div class="w-9 h-9 bg-cyan-500/10 rounded-2xl flex items-center justify-center text-cyan-400"><i class="fa-solid fa-piggy-bank"></i></div>
             <span class="font-medium">Add Savings</span>
         </div>
     </div>
@@ -299,7 +213,6 @@
                 </div>
                 <div id="modal-content" class="space-y-8"></div>
             </div>
-            
             <div class="p-6 md:p-8 border-t border-zinc-700 flex gap-4">
                 <button onclick="hideAddModal()" class="flex-1 py-5 rounded-3xl border border-zinc-600 font-semibold">Cancel</button>
                 <button onclick="saveCurrentEntry()" class="flex-1 py-5 rounded-3xl bg-gradient-to-r from-pink-500 to-cyan-500 font-semibold">Save</button>
@@ -308,142 +221,30 @@
     </div>
 
     <script>
+        // Global Variables
         let salesEntries = [];
         let savingsEntries = [];
         let currentModalType = 'sales';
-        let editingIndex = null;
+        let editingKey = null;
 
-        function loadData() {
-            salesEntries = JSON.parse(localStorage.getItem('salesEntries')) || [];
-            savingsEntries = JSON.parse(localStorage.getItem('savingsEntries')) || [];
-        }
+        // Navigation
+        function navigateTo(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+            document.getElementById(page + '-page').classList.remove('hidden');
 
-        function saveData() {
-            localStorage.setItem('salesEntries', JSON.stringify(salesEntries));
-            localStorage.setItem('savingsEntries', JSON.stringify(savingsEntries));
-            renderAll();
-        }
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            const nav = document.getElementById('nav-' + page);
+            if (nav) nav.classList.add('active');
 
-        function calculateNet(income, bawas) {
-            return parseFloat(income || 0) - parseFloat(bawas || 0);
-        }
+            document.querySelectorAll('[id^="bottom-nav-"]').forEach(b => b.classList.remove('text-white'));
+            const bottom = document.getElementById('bottom-nav-' + page);
+            if (bottom) bottom.classList.add('text-white');
 
-        function formatDate(dateStr) {
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        }
-
-        function animateValue(id, start, end, duration) {
-            const obj = document.getElementById(id);
-            if (!obj) return;
-            const range = end - start;
-            let startTimestamp = null;
-            const step = (timestamp) => {
-                if (!startTimestamp) startTimestamp = timestamp;
-                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                const value = Math.floor(progress * range + start);
-                obj.textContent = '₱' + value.toLocaleString();
-                if (progress < 1) window.requestAnimationFrame(step);
-            };
-            window.requestAnimationFrame(step);
-        }
-
-        function renderDashboard() {
-            const totalIncome = salesEntries.reduce((sum, e) => sum + parseFloat(e.income || 0), 0);
-            const totalBawas = salesEntries.reduce((sum, e) => sum + parseFloat(e.bawas || 0), 0);
-            const totalNetSales = totalIncome - totalBawas;
-            const totalSavings = savingsEntries.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
-            const netBalance = totalNetSales;
-
-            animateValue('dash-total-sales', 0, Math.round(totalIncome), 800);
-            animateValue('dash-net-sales', 0, Math.round(totalNetSales), 800);
-            animateValue('dash-total-savings', 0, Math.round(totalSavings), 800);
-            animateValue('dash-net-balance', 0, Math.round(netBalance), 900);
-
-            // Recent Sales
-            let salesHTML = '';
-            const recentSales = [...salesEntries].reverse().slice(0, 8);
-            recentSales.forEach(s => {
-                salesHTML += `<div class="flex justify-between items-center py-3 border-b border-zinc-800 last:border-0">
-                    <span class="text-zinc-400 text-sm">${formatDate(s.date)}</span>
-                    <span class="font-mono font-semibold text-emerald-400">₱${parseFloat(s.income).toLocaleString()}</span>
-                </div>`;
-            });
-            document.getElementById('recent-sales').innerHTML = salesHTML || '<p class="text-zinc-500 py-8 text-center">No recent sales</p>';
-
-            // Recent Savings
-            let savingsHTML = '';
-            const recentSavings = [...savingsEntries].reverse().slice(0, 8);
-            recentSavings.forEach(s => {
-                savingsHTML += `<div class="flex justify-between items-center py-3 border-b border-zinc-800 last:border-0">
-                    <span class="text-zinc-400 text-sm">${formatDate(s.date)}</span>
-                    <span class="font-mono font-semibold text-emerald-400">₱${parseFloat(s.amount).toLocaleString()}</span>
-                </div>`;
-            });
-            document.getElementById('recent-savings').innerHTML = savingsHTML || '<p class="text-zinc-500 py-8 text-center">No recent savings</p>';
-        }
-
-        function renderSales() {
-            const sorted = [...salesEntries].sort((a, b) => new Date(b.date) - new Date(a.date));
-            let html = '';
-            sorted.forEach((entry, i) => {
-                const net = calculateNet(entry.income, entry.bawas);
-                html += `
-                    <tr class="hover:bg-zinc-800/70">
-                        <td class="p-5 whitespace-nowrap">${formatDate(entry.date)}</td>
-                        <td class="p-5 text-right font-mono text-emerald-400">₱${parseFloat(entry.income).toLocaleString()}</td>
-                        <td class="p-5 text-right font-mono text-orange-400">₱${parseFloat(entry.bawas || 0).toLocaleString()}</td>
-                        <td class="p-5 text-right font-mono ${net >= 0 ? 'text-cyan-400' : 'text-red-400'} font-semibold">₱${net.toLocaleString()}</td>
-                        <td class="p-5">
-                            <button onclick="editEntry('sales', ${i}); event.stopImmediatePropagation()" class="mr-3 text-blue-400"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="deleteEntry('sales', ${i}); event.stopImmediatePropagation()" class="text-red-400"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
-            document.getElementById('sales-body').innerHTML = html || `<tr><td colspan="5" class="p-12 text-center text-zinc-500">No sales yet</td></tr>`;
-        }
-
-        function renderSavings() {
-            const sorted = [...savingsEntries].sort((a, b) => new Date(b.date) - new Date(a.date));
-            let total = 0;
-            let html = '';
-            sorted.forEach((entry, i) => {
-                const amt = parseFloat(entry.amount);
-                total += amt;
-                html += `
-                    <tr class="hover:bg-zinc-800/70">
-                        <td class="p-5">${formatDate(entry.date)}</td>
-                        <td class="p-5 text-right font-mono text-emerald-400 font-semibold">₱${amt.toLocaleString()}</td>
-                        <td class="p-5">
-                            <button onclick="editEntry('savings', ${i}); event.stopImmediatePropagation()" class="mr-3 text-blue-400"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="deleteEntry('savings', ${i}); event.stopImmediatePropagation()" class="text-red-400"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
-            document.getElementById('savings-body').innerHTML = html || `<tr><td colspan="3" class="p-12 text-center text-zinc-500">No savings yet</td></tr>`;
-            document.getElementById('total-savings-display').textContent = '₱' + total.toLocaleString();
-        }
-
-        function renderAll() {
-            renderDashboard();
-            renderSales();
-            renderSavings();
+            document.getElementById('page-title').textContent = page === 'dashboard' ? 'Dashboard' : page.charAt(0).toUpperCase() + page.slice(1);
         }
 
         function showQuickAddMenu() {
-            const menu = document.getElementById('quick-add-menu');
-            menu.classList.toggle('hidden');
-            setTimeout(() => {
-                const handler = (e) => {
-                    if (!menu.contains(e.target)) {
-                        menu.classList.add('hidden');
-                        document.removeEventListener('click', handler);
-                    }
-                };
-                document.addEventListener('click', handler);
-            }, 10);
+            document.getElementById('quick-add-menu').classList.toggle('hidden');
         }
 
         function quickAdd(type) {
@@ -453,7 +254,7 @@
 
         function showAddModal(type, isEdit = false, data = null) {
             currentModalType = type;
-            editingIndex = isEdit ? data.index : null;
+            editingKey = isEdit ? data.key : null;
 
             document.getElementById('add-modal').classList.remove('hidden');
             const content = document.getElementById('modal-content');
@@ -465,105 +266,181 @@
             if (type === 'sales') {
                 content.innerHTML = `
                     <div class="space-y-8">
-                        <div>
-                            <label class="block text-sm text-zinc-400 mb-2">DATE</label>
-                            <input type="date" id="modal-date" value="${data ? data.date : today}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-lg">
-                        </div>
-                        <div>
-                            <label class="block text-sm text-zinc-400 mb-2">INCOME (₱)</label>
-                            <input type="number" id="modal-income" value="${data ? data.income : ''}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-4xl font-mono">
-                        </div>
-                        <div>
-                            <label class="block text-sm text-zinc-400 mb-2">BAWAS (₱)</label>
-                            <input type="number" id="modal-bawas" value="${data ? data.bawas : '0'}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-4xl font-mono">
-                        </div>
-                    </div>
-                `;
-            } else if (type === 'savings') {
+                        <div><label class="block text-sm text-zinc-400 mb-2">DATE</label>
+                        <input type="date" id="modal-date" value="${data ? data.date : today}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-lg"></div>
+                        <div><label class="block text-sm text-zinc-400 mb-2">INCOME (₱)</label>
+                        <input type="number" id="modal-income" value="${data ? data.income : ''}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-4xl font-mono"></div>
+                        <div><label class="block text-sm text-zinc-400 mb-2">BAWAS (₱)</label>
+                        <input type="number" id="modal-bawas" value="${data ? data.bawas : '0'}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-4xl font-mono"></div>
+                    </div>`;
+            } else {
                 content.innerHTML = `
                     <div class="space-y-8">
-                        <div>
-                            <label class="block text-sm text-zinc-400 mb-2">DATE</label>
-                            <input type="date" id="modal-date" value="${data ? data.date : today}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-lg">
-                        </div>
-                        <div>
-                            <label class="block text-sm text-zinc-400 mb-2">AMOUNT (₱)</label>
-                            <input type="number" id="modal-amount" value="${data ? data.amount : ''}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-4xl font-mono">
-                        </div>
-                    </div>
-                `;
+                        <div><label class="block text-sm text-zinc-400 mb-2">DATE</label>
+                        <input type="date" id="modal-date" value="${data ? data.date : today}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-lg"></div>
+                        <div><label class="block text-sm text-zinc-400 mb-2">AMOUNT (₱)</label>
+                        <input type="number" id="modal-amount" value="${data ? data.amount : ''}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-4xl font-mono"></div>
+                    </div>`;
             }
         }
 
         function hideAddModal() {
             document.getElementById('add-modal').classList.add('hidden');
-            editingIndex = null;
+            editingKey = null;
         }
 
+        // SAVE FUNCTION (Critical Fix)
         function saveCurrentEntry() {
             const date = document.getElementById('modal-date').value;
             if (!date) return alert("Please select a date");
 
+            const { ref, push, set } = window.firebaseRefs || {};
+
             if (currentModalType === 'sales') {
                 const income = parseFloat(document.getElementById('modal-income').value) || 0;
                 const bawas = parseFloat(document.getElementById('modal-bawas').value) || 0;
-                if (editingIndex !== null) {
-                    salesEntries[editingIndex] = { date, income, bawas };
+                const entry = { date, income, bawas };
+
+                if (editingKey) {
+                    set(ref(window.db, `sales/${editingKey}`), entry);
                 } else {
-                    salesEntries.push({ date, income, bawas });
+                    push(ref(window.db, 'sales'), entry);
                 }
-            } else if (currentModalType === 'savings') {
+            } else {
                 const amount = parseFloat(document.getElementById('modal-amount').value) || 0;
                 if (amount <= 0) return alert("Amount must be positive");
-                if (editingIndex !== null) {
-                    savingsEntries[editingIndex] = { date, amount };
+                const entry = { date, amount };
+
+                if (editingKey) {
+                    set(ref(window.db, `savings/${editingKey}`), entry);
                 } else {
-                    savingsEntries.push({ date, amount });
+                    push(ref(window.db, 'savings'), entry);
                 }
             }
-            saveData();
             hideAddModal();
         }
 
-        function editEntry(type, index) {
-            let data = type === 'sales' ? salesEntries[index] : savingsEntries[index];
-            if (data) showAddModal(type, true, { ...data, index });
+        function editEntry(type, key) {
+            const entries = type === 'sales' ? salesEntries : savingsEntries;
+            const entry = entries.find(e => e.key === key);
+            if (entry) showAddModal(type, true, entry);
         }
 
-        function deleteEntry(type, index) {
+        function deleteEntry(type, key) {
             if (confirm("Delete this entry?")) {
-                if (type === 'sales') salesEntries.splice(index, 1);
-                else if (type === 'savings') savingsEntries.splice(index, 1);
-                saveData();
+                const { ref, remove } = window.firebaseRefs || {};
+                remove(ref(window.db, `${type}/${key}`));
             }
         }
 
-        function navigateTo(page) {
-            document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
-            document.getElementById(page + '-page').classList.remove('hidden');
-
-            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-            const desktopNav = document.getElementById('nav-' + page);
-            if (desktopNav) desktopNav.classList.add('active');
-
-            document.querySelectorAll('[id^="bottom-nav-"]').forEach(btn => btn.classList.remove('text-white'));
-            const bottomNav = document.getElementById('bottom-nav-' + page);
-            if (bottomNav) bottomNav.classList.add('text-white');
-
-            document.getElementById('page-title').textContent = 
-                page === 'dashboard' ? 'Dashboard' : page === 'sales' ? 'Sales' : 'Savings';
+        // Render Functions
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            if (!obj) return;
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const value = Math.floor(progress * (end - start) + start);
+                obj.textContent = '₱' + value.toLocaleString();
+                if (progress < 1) requestAnimationFrame(step);
+            };
+            requestAnimationFrame(step);
         }
 
-        window.onload = function() {
-            const today = new Date();
-            document.getElementById('current-date').textContent = today.toLocaleDateString('en-US', { 
-                weekday: 'long', month: 'long', day: 'numeric' 
+        function renderDashboard() {
+            const totalIncome = salesEntries.reduce((sum, e) => sum + parseFloat(e.income || 0), 0);
+            const totalBawas = salesEntries.reduce((sum, e) => sum + parseFloat(e.bawas || 0), 0);
+            const totalNetSales = totalIncome - totalBawas;
+            const totalSavings = savingsEntries.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+
+            animateValue('dash-total-sales', 0, Math.round(totalIncome), 800);
+            animateValue('dash-net-sales', 0, Math.round(totalNetSales), 800);
+            animateValue('dash-total-savings', 0, Math.round(totalSavings), 800);
+            animateValue('dash-net-balance', 0, Math.round(totalNetSales), 900);
+        }
+
+        function renderSales() {
+            const sorted = [...salesEntries].sort((a,b) => new Date(b.date) - new Date(a.date));
+            let html = '';
+            sorted.forEach(entry => {
+                const net = parseFloat(entry.income||0) - parseFloat(entry.bawas||0);
+                html += `
+                    <tr class="hover:bg-zinc-800/70">
+                        <td class="p-5">${new Date(entry.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
+                        <td class="p-5 text-right font-mono text-emerald-400">₱${parseFloat(entry.income||0).toLocaleString()}</td>
+                        <td class="p-5 text-right font-mono text-orange-400">₱${parseFloat(entry.bawas||0).toLocaleString()}</td>
+                        <td class="p-5 text-right font-mono ${net>=0?'text-cyan-400':'text-red-400'} font-semibold">₱${net.toLocaleString()}</td>
+                        <td class="p-5 text-center">
+                            <button onclick="editEntry('sales','${entry.key}')" class="text-blue-400 mr-3"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteEntry('sales','${entry.key}')" class="text-red-400"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
             });
-            
-            loadData();
+            document.getElementById('sales-body').innerHTML = html || `<tr><td colspan="5" class="p-12 text-center text-zinc-500">No sales yet</td></tr>`;
+        }
+
+        function renderSavings() {
+            const sorted = [...savingsEntries].sort((a,b) => new Date(b.date) - new Date(a.date));
+            let total = 0;
+            let html = '';
+            sorted.forEach(entry => {
+                const amt = parseFloat(entry.amount || 0);
+                total += amt;
+                html += `
+                    <tr class="hover:bg-zinc-800/70">
+                        <td class="p-5">${new Date(entry.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
+                        <td class="p-5 text-right font-mono text-emerald-400 font-semibold">₱${amt.toLocaleString()}</td>
+                        <td class="p-5 text-center">
+                            <button onclick="editEntry('savings','${entry.key}')" class="text-blue-400 mr-3"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteEntry('savings','${entry.key}')" class="text-red-400"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+            });
+            document.getElementById('savings-body').innerHTML = html || `<tr><td colspan="3" class="p-12 text-center text-zinc-500">No savings yet</td></tr>`;
+            document.getElementById('total-savings-display').textContent = '₱' + total.toLocaleString();
+        }
+
+        function renderAll() {
+            renderDashboard();
+            renderSales();
+            renderSavings();
+        }
+
+        // Firebase Real-time Listeners
+        function initFirebase() {
+            if (!window.firebaseRefs) return setTimeout(initFirebase, 500);
+
+            const { ref, onValue } = window.firebaseRefs;
+
+            onValue(ref(window.db, 'sales'), (snapshot) => {
+                salesEntries = snapshot.exists() ? Object.entries(snapshot.val()).map(([key, val]) => ({key, ...val})) : [];
+                renderAll();
+            });
+
+            onValue(ref(window.db, 'savings'), (snapshot) => {
+                savingsEntries = snapshot.exists() ? Object.entries(snapshot.val()).map(([key, val]) => ({key, ...val})) : [];
+                renderAll();
+            });
+        }
+
+        // Initialize
+        window.onload = () => {
+            const today = new Date();
+            document.getElementById('current-date').textContent = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
             navigateTo('dashboard');
-            renderAll();
+            initFirebase();
         };
+
+        // Expose all functions globally
+        window.navigateTo = navigateTo;
+        window.showQuickAddMenu = showQuickAddMenu;
+        window.quickAdd = quickAdd;
+        window.showAddModal = showAddModal;
+        window.hideAddModal = hideAddModal;
+        window.saveCurrentEntry = saveCurrentEntry;
+        window.editEntry = editEntry;
+        window.deleteEntry = deleteEntry;
     </script>
 </body>
 </html>
