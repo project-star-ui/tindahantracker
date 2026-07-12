@@ -221,13 +221,19 @@
     </div>
 
     <script>
-        // Global Variables
         let salesEntries = [];
         let savingsEntries = [];
         let currentModalType = 'sales';
         let editingKey = null;
 
-        // Navigation
+        function getTodayDate() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
         function navigateTo(page) {
             document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
             document.getElementById(page + '-page').classList.remove('hidden');
@@ -261,25 +267,33 @@
             const title = document.getElementById('modal-title');
             title.textContent = isEdit ? 'Edit Entry' : 'New Entry';
 
-            const today = new Date().toISOString().split('T')[0];
-
             if (type === 'sales') {
                 content.innerHTML = `
                     <div class="space-y-8">
-                        <div><label class="block text-sm text-zinc-400 mb-2">DATE</label>
-                        <input type="date" id="modal-date" value="${data ? data.date : today}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-lg"></div>
-                        <div><label class="block text-sm text-zinc-400 mb-2">INCOME (₱)</label>
-                        <input type="number" id="modal-income" value="${data ? data.income : ''}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-4xl font-mono"></div>
-                        <div><label class="block text-sm text-zinc-400 mb-2">BAWAS (₱)</label>
-                        <input type="number" id="modal-bawas" value="${data ? data.bawas : '0'}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-4xl font-mono"></div>
+                        <div>
+                            <label class="block text-sm text-zinc-400 mb-2">DATE</label>
+                            <input type="date" id="modal-date" value="${data ? data.date : getTodayDate()}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-lg">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-zinc-400 mb-2">INCOME (₱)</label>
+                            <input type="number" id="modal-income" value="${data ? data.income : ''}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-4xl font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-zinc-400 mb-2">BAWAS (₱)</label>
+                            <input type="number" id="modal-bawas" value="${data ? data.bawas : '0'}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-4xl font-mono">
+                        </div>
                     </div>`;
             } else {
                 content.innerHTML = `
                     <div class="space-y-8">
-                        <div><label class="block text-sm text-zinc-400 mb-2">DATE</label>
-                        <input type="date" id="modal-date" value="${data ? data.date : today}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-lg"></div>
-                        <div><label class="block text-sm text-zinc-400 mb-2">AMOUNT (₱)</label>
-                        <input type="number" id="modal-amount" value="${data ? data.amount : ''}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-4xl font-mono"></div>
+                        <div>
+                            <label class="block text-sm text-zinc-400 mb-2">DATE</label>
+                            <input type="date" id="modal-date" value="${data ? data.date : getTodayDate()}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-lg">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-zinc-400 mb-2">AMOUNT (₱)</label>
+                            <input type="number" id="modal-amount" value="${data ? data.amount : ''}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-4xl font-mono">
+                        </div>
                     </div>`;
             }
         }
@@ -289,7 +303,6 @@
             editingKey = null;
         }
 
-        // SAVE FUNCTION (Critical Fix)
         function saveCurrentEntry() {
             const date = document.getElementById('modal-date').value;
             if (!date) return alert("Please select a date");
@@ -333,7 +346,6 @@
             }
         }
 
-        // Render Functions
         function animateValue(id, start, end, duration) {
             const obj = document.getElementById(id);
             if (!obj) return;
@@ -407,10 +419,8 @@
             renderSavings();
         }
 
-        // Firebase Real-time Listeners
         function initFirebase() {
             if (!window.firebaseRefs) return setTimeout(initFirebase, 500);
-
             const { ref, onValue } = window.firebaseRefs;
 
             onValue(ref(window.db, 'sales'), (snapshot) => {
@@ -424,7 +434,6 @@
             });
         }
 
-        // Initialize
         window.onload = () => {
             const today = new Date();
             document.getElementById('current-date').textContent = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
@@ -432,7 +441,6 @@
             initFirebase();
         };
 
-        // Expose all functions globally
         window.navigateTo = navigateTo;
         window.showQuickAddMenu = showQuickAddMenu;
         window.quickAdd = quickAdd;
