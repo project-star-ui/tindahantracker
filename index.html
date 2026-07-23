@@ -130,9 +130,6 @@
                     </div>
                 </div>
 
-                <!-- SALES, UTANG, SAVINGS pages remain as before -->
-                <!-- (I kept them full for completeness) -->
-
                 <!-- SALES PAGE -->
                 <div id="sales-page" class="page hidden">
                     <div class="flex justify-between items-center mb-6">
@@ -356,11 +353,102 @@
             }
         }
 
+        function renderDashboard() {
+            const totalSales = salesEntries.reduce((sum, e) => sum + (e.income || 0), 0);
+            const totalBawas = salesEntries.reduce((sum, e) => sum + (e.bawas || 0), 0);
+            const netSales = totalSales - totalBawas;
+            const totalSavings = savingsEntries.reduce((sum, e) => sum + (e.amount || 0), 0);
+
+            document.getElementById('dash-total-sales').textContent = '₱' + Math.round(totalSales).toLocaleString();
+            document.getElementById('dash-net-sales').textContent = '₱' + Math.round(netSales).toLocaleString();
+            document.getElementById('dash-total-savings').textContent = '₱' + Math.round(totalSavings).toLocaleString();
+            document.getElementById('dash-net-balance').textContent = '₱' + Math.round(netSales).toLocaleString();
+        }
+
+        function renderSales() {
+            const sorted = [...salesEntries].sort((a,b) => new Date(b.date) - new Date(a.date));
+            let html = '';
+            sorted.forEach(entry => {
+                const net = (entry.income || 0) - (entry.bawas || 0);
+                html += `<tr class="hover:bg-zinc-800">
+                    <td class="p-5">${new Date(entry.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
+                    <td class="p-5 text-right font-mono text-emerald-400">₱${parseFloat(entry.income||0).toLocaleString()}</td>
+                    <td class="p-5 text-right font-mono text-orange-400">₱${parseFloat(entry.bawas||0).toLocaleString()}</td>
+                    <td class="p-5 text-right font-mono ${net>=0?'text-cyan-400':'text-red-400'} font-semibold">₱${net.toLocaleString()}</td>
+                    <td class="p-5 text-center">
+                        <button onclick="deleteEntry('sales','${entry.key}')" class="text-red-400"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('sales-body').innerHTML = html || `<tr><td colspan="5" class="p-12 text-center text-zinc-500">No sales yet</td></tr>`;
+        }
+
+        function renderUtang() {
+            const container = document.getElementById('utang-container');
+            const grouped = {};
+            utangEntries.forEach(e => {
+                if (!grouped[e.name]) grouped[e.name] = [];
+                grouped[e.name].push(e);
+            });
+
+            let html = '';
+            Object.keys(grouped).sort().forEach(name => {
+                const list = grouped[name];
+                const total = list.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
+                let rows = '';
+                list.forEach(item => {
+                    rows += `
+                        <div class="flex justify-between items-center bg-zinc-800 p-4 rounded-2xl mb-3">
+                            <div>
+                                <div class="text-xs text-zinc-400">${new Date(item.date).toLocaleDateString('en-US',{month:'short', day:'numeric'})}</div>
+                                <div>${item.items}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-mono text-pink-400 font-semibold">₱${parseFloat(item.amount).toLocaleString()}</div>
+                                <button onclick="deleteEntry('utang','${item.key}')" class="text-red-400 text-xs mt-1">Delete</button>
+                            </div>
+                        </div>`;
+                });
+                html += `
+                    <div class="bg-zinc-900 border border-pink-500/30 rounded-3xl p-6">
+                        <div class="flex justify-between mb-4">
+                            <h3 class="text-2xl font-bold">${name}</h3>
+                            <div class="text-right">
+                                <div class="text-xs text-pink-400">TOTAL</div>
+                                <div class="text-3xl font-bold text-pink-400">₱${total.toLocaleString()}</div>
+                            </div>
+                        </div>
+                        ${rows}
+                        <div class="grid grid-cols-2 gap-3 mt-6">
+                            <button onclick="addItemTo('${name}')" class="py-4 bg-gradient-to-r from-pink-500 to-cyan-500 rounded-3xl font-medium">+ Add Item</button>
+                            <button onclick="markAsPaid('${name}')" class="py-4 border border-emerald-400 text-emerald-400 rounded-3xl font-medium">✅ Mark as Paid</button>
+                        </div>
+                    </div>`;
+            });
+            container.innerHTML = html || `<div class="text-center py-20 text-zinc-500">No utang records yet</div>`;
+        }
+
+        function renderSavings() {
+            const sorted = [...savingsEntries].sort((a,b) => new Date(b.date) - new Date(a.date));
+            let html = '';
+            sorted.forEach(entry => {
+                html += `
+                    <tr class="hover:bg-zinc-800">
+                        <td class="p-5">${new Date(entry.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
+                        <td class="p-5 text-right font-mono text-emerald-400 font-semibold">₱${parseFloat(entry.amount||0).toLocaleString()}</td>
+                        <td class="p-5 text-center">
+                            <button onclick="deleteEntry('savings','${entry.key}')" class="text-red-400"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+            });
+            document.getElementById('savings-body').innerHTML = html || `<tr><td colspan="3" class="p-12 text-center text-zinc-500">No savings yet</td></tr>`;
+        }
+
         function renderAll() {
-            // Dashboard, Sales, Utang, Savings rendering functions
-            // (Shortened for space - full logic is included in previous messages)
-            // You can copy render functions from the last full version I gave you
-            console.log("Data updated");
+            renderDashboard();
+            renderSales();
+            renderUtang();
+            renderSavings();
         }
 
         function initFirebase() {
@@ -371,11 +459,11 @@
             onValue(ref(window.db, 'savings'), snap => { savingsEntries = snap.exists() ? Object.entries(snap.val()).map(([k,v]) => ({key:k,...v})) : []; renderAll(); });
         }
 
-        // Register Service Worker for PWA
+        // PWA Service Worker Registration
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('service-worker.js')
-                    .then(() => console.log('PWA Service Worker Registered'))
+                    .then(() => console.log('Service Worker Registered Successfully'))
                     .catch(err => console.log('Service Worker Error:', err));
             });
         }
@@ -386,6 +474,7 @@
             initFirebase();
         };
 
+        // Expose functions
         window.navigateTo = navigateTo;
         window.showQuickAddMenu = showQuickAddMenu;
         window.quickAdd = quickAdd;
