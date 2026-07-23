@@ -14,10 +14,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 
-    <!-- Firebase -->
+    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-        import { getDatabase, ref, onValue, push, set, remove } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+        import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
         const firebaseConfig = {
             apiKey: "AIzaSyBWQgSLhiVCSjRkrjPsip6tcBa4JfsvBko",
             authDomain: "messagingfun.firebaseapp.com",
@@ -29,7 +29,7 @@
         };
         const app = initializeApp(firebaseConfig);
         window.db = getDatabase(app);
-        window.firebaseRefs = { ref, onValue, push, set, remove };
+        window.firebaseRefs = { ref, onValue, push };
     </script>
 
     <style>
@@ -49,10 +49,198 @@
 </head>
 <body class="bg-zinc-950 text-white min-h-screen">
 
-    <!-- [All your HTML content - same as before] -->
-    <!-- Mobile Top Nav, Sidebar, Main Content, Pages, Bottom Nav, Floating Button, Quick Menu, Modal -->
+    <!-- Mobile Top Nav -->
+    <div class="md:hidden bg-black/95 border-b border-zinc-800 px-4 py-4 flex items-center justify-between sticky top-0 z-50 backdrop-blur-lg">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-3xl tiktok-gradient flex items-center justify-center text-2xl shadow-inner">💰</div>
+            <span class="logo-font text-3xl font-bold tracking-tighter">BentaTrack</span>
+        </div>
+    </div>
 
-    <!-- (To save space, I'm showing only the script part. Use the full body from my previous full code) -->
+    <div class="flex h-screen md:h-auto">
+        <!-- Sidebar -->
+        <div class="w-72 bg-black border-r border-zinc-800 flex-col hidden md:flex h-full">
+            <div class="p-6 border-b border-zinc-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-3xl tiktok-gradient flex items-center justify-center text-white font-bold text-3xl shadow-inner">💰</div>
+                    <div>
+                        <span class="logo-font text-4xl font-bold tracking-tighter">Benta</span>
+                        <span class="logo-font text-4xl font-bold tracking-tighter text-transparent bg-clip-text tiktok-gradient">Track</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 p-4 overflow-auto">
+                <div class="space-y-2">
+                    <a href="#" onclick="navigateTo('dashboard')" class="nav-link flex items-center gap-4 px-5 py-4 rounded-3xl hover:bg-zinc-900 text-white font-medium active" id="nav-dashboard">
+                        <i class="fa-solid fa-chart-line w-6 text-xl"></i><span class="text-lg">Dashboard</span>
+                    </a>
+                    <a href="#" onclick="navigateTo('sales')" class="nav-link flex items-center gap-4 px-5 py-4 rounded-3xl hover:bg-zinc-900 text-zinc-400 hover:text-white font-medium" id="nav-sales">
+                        <i class="fa-solid fa-cart-shopping w-6 text-xl"></i><span class="text-lg">Sales</span>
+                    </a>
+                    <a href="#" onclick="navigateTo('utang')" class="nav-link flex items-center gap-4 px-5 py-4 rounded-3xl hover:bg-zinc-900 text-zinc-400 hover:text-white font-medium" id="nav-utang">
+                        <i class="fa-solid fa-hand-holding-dollar w-6 text-xl"></i><span class="text-lg">Utang</span>
+                    </a>
+                    <a href="#" onclick="navigateTo('savings')" class="nav-link flex items-center gap-4 px-5 py-4 rounded-3xl hover:bg-zinc-900 text-zinc-400 hover:text-white font-medium" id="nav-savings">
+                        <i class="fa-solid fa-piggy-bank w-6 text-xl"></i><span class="text-lg">Savings</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col h-screen md:h-auto overflow-hidden">
+            <div class="hidden md:flex bg-black/90 border-b border-zinc-800 px-8 py-6 items-center justify-between sticky top-0 z-50 backdrop-blur-lg">
+                <h1 id="page-title" class="text-4xl font-semibold tracking-tighter">Dashboard</h1>
+                <div id="current-date" class="font-mono text-xl text-zinc-400"></div>
+            </div>
+
+            <div class="flex-1 overflow-auto p-4 md:p-8">
+                <!-- DASHBOARD -->
+                <div id="dashboard-page" class="page">
+                    <div class="grid grid-cols-2 md:grid-cols-12 gap-4 md:gap-6">
+                        <div onclick="navigateTo('sales')" class="col-span-2 md:col-span-3 bg-zinc-900 rounded-3xl p-6 md:p-7 card-hover cursor-pointer border border-zinc-800">
+                            <div class="flex justify-between items-start">
+                                <div><div class="text-emerald-400 text-sm font-medium tracking-widest">TOTAL SALES</div>
+                                <div id="dash-total-sales" class="text-4xl md:text-5xl font-bold font-mono mt-3 stat-number">₱0</div></div>
+                                <i class="fa-solid fa-cart-shopping text-4xl text-emerald-400/30"></i>
+                            </div>
+                        </div>
+                        <div class="col-span-2 md:col-span-3 bg-zinc-900 rounded-3xl p-6 md:p-7 card-hover border border-zinc-800">
+                            <div class="flex justify-between items-start">
+                                <div><div class="text-cyan-400 text-sm font-medium tracking-widest">NET FROM SALES</div>
+                                <div id="dash-net-sales" class="text-4xl md:text-5xl font-bold font-mono mt-3 stat-number">₱0</div></div>
+                                <i class="fa-solid fa-minus-circle text-4xl text-cyan-400/30"></i>
+                            </div>
+                        </div>
+                        <div onclick="navigateTo('savings')" class="col-span-2 md:col-span-3 bg-zinc-900 rounded-3xl p-6 md:p-7 card-hover cursor-pointer border border-zinc-800">
+                            <div class="flex justify-between items-start">
+                                <div><div class="text-emerald-400 text-sm font-medium tracking-widest">SAVINGS</div>
+                                <div id="dash-total-savings" class="text-4xl md:text-5xl font-bold font-mono mt-3 stat-number">₱0</div></div>
+                                <i class="fa-solid fa-piggy-bank text-4xl text-emerald-400/30"></i>
+                            </div>
+                        </div>
+                        <div class="col-span-2 md:col-span-3 bg-gradient-to-br from-pink-900 via-purple-900 to-cyan-900 rounded-3xl p-6 md:p-7 card-hover cursor-pointer border border-white/10 relative overflow-hidden">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1"><div class="text-white text-sm font-medium tracking-widest">NET BALANCE</div>
+                                <div id="dash-net-balance" class="text-4xl md:text-5xl font-bold font-mono mt-3 stat-number">₱0</div></div>
+                                <i class="fa-solid fa-wallet text-5xl text-white/30"></i>
+                            </div>
+                            <div class="absolute -bottom-6 -right-6 text-[110px] opacity-10">₱</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SALES PAGE -->
+                <div id="sales-page" class="page hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl md:text-3xl font-semibold tracking-tighter">Sales History</h2>
+                        <button onclick="quickAdd('sales')" class="px-5 py-3 bg-gradient-to-r from-pink-500 to-cyan-500 rounded-3xl font-semibold flex items-center gap-2">
+                            <i class="fa-solid fa-plus"></i> New Sale
+                        </button>
+                    </div>
+                    <div class="bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800">
+                        <div class="overflow-x-auto">
+                            <table class="w-full min-w-[500px]">
+                                <thead>
+                                    <tr class="border-b border-zinc-700">
+                                        <th class="text-left p-5 md:p-6">DATE</th>
+                                        <th class="text-right p-5 md:p-6">INCOME</th>
+                                        <th class="text-right p-5 md:p-6">BAWAS</th>
+                                        <th class="text-right p-5 md:p-6">NET</th>
+                                        <th class="w-20"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sales-body" class="divide-y divide-zinc-800"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- UTANG PAGE -->
+                <div id="utang-page" class="page hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl md:text-3xl font-semibold tracking-tighter">Utang</h2>
+                        <button onclick="quickAdd('utang')" class="px-5 py-3 bg-gradient-to-r from-pink-500 to-cyan-500 rounded-3xl font-semibold flex items-center gap-2">
+                            <i class="fa-solid fa-plus"></i> New Borrower
+                        </button>
+                    </div>
+                    <div id="utang-container" class="space-y-6"></div>
+                </div>
+
+                <!-- SAVINGS PAGE -->
+                <div id="savings-page" class="page hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl md:text-3xl font-semibold tracking-tighter">Savings</h2>
+                        <button onclick="quickAdd('savings')" class="px-5 py-3 bg-gradient-to-r from-pink-500 to-cyan-500 rounded-3xl font-semibold flex items-center gap-2">
+                            <i class="fa-solid fa-plus"></i> Add Savings
+                        </button>
+                    </div>
+                    <div class="bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800">
+                        <div class="overflow-x-auto">
+                            <table class="w-full min-w-[400px]">
+                                <thead>
+                                    <tr class="border-b border-zinc-700">
+                                        <th class="text-left p-5 md:p-6">DATE</th>
+                                        <th class="text-right p-5 md:p-6">AMOUNT</th>
+                                        <th class="w-20"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="savings-body" class="divide-y divide-zinc-800"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Navigation -->
+            <div class="md:hidden fixed bottom-0 left-0 right-0 bg-black/95 border-t border-zinc-800 z-50 bottom-nav">
+                <div class="flex items-center justify-around py-2">
+                    <button onclick="navigateTo('dashboard')" class="flex flex-col items-center py-2 px-4 text-white" id="bottom-nav-dashboard"><i class="fa-solid fa-chart-line text-2xl"></i><span class="text-xs mt-1">Home</span></button>
+                    <button onclick="navigateTo('sales')" class="flex flex-col items-center py-2 px-4 text-zinc-400" id="bottom-nav-sales"><i class="fa-solid fa-cart-shopping text-2xl"></i><span class="text-xs mt-1">Sales</span></button>
+                    <button onclick="navigateTo('utang')" class="flex flex-col items-center py-2 px-4 text-zinc-400" id="bottom-nav-utang"><i class="fa-solid fa-hand-holding-dollar text-2xl"></i><span class="text-xs mt-1">Utang</span></button>
+                    <button onclick="navigateTo('savings')" class="flex flex-col items-center py-2 px-4 text-zinc-400" id="bottom-nav-savings"><i class="fa-solid fa-piggy-bank text-2xl"></i><span class="text-xs mt-1">Savings</span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <button onclick="showQuickAddMenu()" class="md:hidden fixed bottom-20 right-6 w-14 h-14 bg-gradient-to-br from-pink-500 to-cyan-500 rounded-full flex items-center justify-center shadow-2xl shadow-pink-500/60 text-3xl z-50 active:scale-95 transition-transform">
+        <i class="fa-solid fa-plus"></i>
+    </button>
+
+    <!-- Quick Add Menu -->
+    <div id="quick-add-menu" class="hidden fixed bottom-36 right-6 bg-zinc-900 rounded-3xl shadow-2xl py-3 w-60 z-50 border border-zinc-700">
+        <div onclick="quickAdd('sales')" class="px-6 py-4 hover:bg-zinc-800 flex items-center gap-4 cursor-pointer">
+            <div class="w-9 h-9 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-400"><i class="fa-solid fa-cart-shopping"></i></div>
+            <span class="font-medium">New Sale</span>
+        </div>
+        <div onclick="quickAdd('utang')" class="px-6 py-4 hover:bg-zinc-800 flex items-center gap-4 cursor-pointer">
+            <div class="w-9 h-9 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-400"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+            <span class="font-medium">New Utang</span>
+        </div>
+        <div onclick="quickAdd('savings')" class="px-6 py-4 hover:bg-zinc-800 flex items-center gap-4 cursor-pointer">
+            <div class="w-9 h-9 bg-cyan-500/10 rounded-2xl flex items-center justify-center text-cyan-400"><i class="fa-solid fa-piggy-bank"></i></div>
+            <span class="font-medium">Add Savings</span>
+        </div>
+    </div>
+
+    <!-- Add Modal -->
+    <div id="add-modal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-2xl flex items-center justify-center z-[100] p-4">
+        <div class="modal bg-zinc-900 w-full max-w-lg mx-auto rounded-3xl overflow-hidden border border-zinc-700">
+            <div class="p-6 md:p-8">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 id="modal-title" class="text-3xl font-semibold tracking-tight">New Entry</h2>
+                    <button onclick="hideAddModal()" class="text-4xl text-zinc-400 hover:text-white">✕</button>
+                </div>
+                <div id="modal-content" class="space-y-8"></div>
+            </div>
+            <div class="p-6 md:p-8 border-t border-zinc-700 flex gap-4">
+                <button onclick="hideAddModal()" class="flex-1 py-5 rounded-3xl border border-zinc-600 font-semibold">Cancel</button>
+                <button onclick="saveCurrentEntry()" class="flex-1 py-5 rounded-3xl bg-gradient-to-r from-pink-500 to-cyan-500 font-semibold">Save</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         let salesEntries = [], savingsEntries = [], utangEntries = [];
@@ -68,9 +256,11 @@
             document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
             document.getElementById(page + '-page').classList.remove('hidden');
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            if (document.getElementById('nav-' + page)) document.getElementById('nav-' + page).classList.add('active');
+            const nav = document.getElementById('nav-' + page);
+            if (nav) nav.classList.add('active');
             document.querySelectorAll('[id^="bottom-nav-"]').forEach(b => b.classList.remove('text-white'));
-            if (document.getElementById('bottom-nav-' + page)) document.getElementById('bottom-nav-' + page).classList.add('text-white');
+            const bottom = document.getElementById('bottom-nav-' + page);
+            if (bottom) bottom.classList.add('text-white');
             document.getElementById('page-title').textContent = page === 'dashboard' ? 'Dashboard' : page.charAt(0).toUpperCase() + page.slice(1);
         }
 
@@ -89,24 +279,35 @@
 
             if (type === 'utang') {
                 title.textContent = personName ? `Add to ${personName}` : "New Borrower";
-                content.innerHTML = `<div class="space-y-8">
-                    <div><label class="block text-sm text-zinc-400 mb-2">NAME</label><input type="text" id="modal-name" value="${personName || ''}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-lg"></div>
-                    <div><label class="block text-sm text-zinc-400 mb-2">ITEMS</label><textarea id="modal-items" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-lg h-24"></textarea></div>
-                    <div><label class="block text-sm text-zinc-400 mb-2">AMOUNT (₱)</label><input type="number" id="modal-amount" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-4xl font-mono"></div>
-                </div>`;
+                content.innerHTML = `
+                    <div class="space-y-8">
+                        <div><label class="block text-sm text-zinc-400 mb-2">NAME</label>
+                            <input type="text" id="modal-name" value="${personName || ''}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-lg"></div>
+                        <div><label class="block text-sm text-zinc-400 mb-2">ITEMS / DESCRIPTION</label>
+                            <textarea id="modal-items" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-lg h-24"></textarea></div>
+                        <div><label class="block text-sm text-zinc-400 mb-2">AMOUNT (₱)</label>
+                            <input type="number" id="modal-amount" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-4xl font-mono"></div>
+                    </div>`;
             } else if (type === 'sales') {
                 title.textContent = "New Sale";
-                content.innerHTML = `<div class="space-y-8">
-                    <div><label class="block text-sm text-zinc-400 mb-2">DATE</label><input type="date" id="modal-date" value="${getTodayDate()}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-lg"></div>
-                    <div><label class="block text-sm text-zinc-400 mb-2">INCOME</label><input type="number" id="modal-income" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-4xl font-mono"></div>
-                    <div><label class="block text-sm text-zinc-400 mb-2">BAWAS</label><input type="number" id="modal-bawas" value="0" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-4xl font-mono"></div>
-                </div>`;
+                content.innerHTML = `
+                    <div class="space-y-8">
+                        <div><label class="block text-sm text-zinc-400 mb-2">DATE</label>
+                            <input type="date" id="modal-date" value="${getTodayDate()}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-lg"></div>
+                        <div><label class="block text-sm text-zinc-400 mb-2">INCOME (₱)</label>
+                            <input type="number" id="modal-income" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-4xl font-mono"></div>
+                        <div><label class="block text-sm text-zinc-400 mb-2">BAWAS (₱)</label>
+                            <input type="number" id="modal-bawas" value="0" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-4xl font-mono"></div>
+                    </div>`;
             } else if (type === 'savings') {
                 title.textContent = "Add Savings";
-                content.innerHTML = `<div class="space-y-8">
-                    <div><label class="block text-sm text-zinc-400 mb-2">DATE</label><input type="date" id="modal-date" value="${getTodayDate()}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-lg"></div>
-                    <div><label class="block text-sm text-zinc-400 mb-2">AMOUNT</label><input type="number" id="modal-amount" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-4xl font-mono"></div>
-                </div>`;
+                content.innerHTML = `
+                    <div class="space-y-8">
+                        <div><label class="block text-sm text-zinc-400 mb-2">DATE</label>
+                            <input type="date" id="modal-date" value="${getTodayDate()}" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-lg"></div>
+                        <div><label class="block text-sm text-zinc-400 mb-2">AMOUNT (₱)</label>
+                            <input type="number" id="modal-amount" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-4xl font-mono"></div>
+                    </div>`;
             }
         }
 
@@ -135,69 +336,113 @@
             hideAddModal();
         }
 
-        // Render functions
+        function addItemTo(name) { showAddModal('utang', name); }
+
+        function markAsPaid(name) {
+            if (confirm(`Mark all utang of ${name} as PAID?`)) {
+                const toDelete = utangEntries.filter(e => e.name === name);
+                const { ref, remove } = window.firebaseRefs || {};
+                toDelete.forEach(e => remove(ref(window.db, `utang/${e.key}`)));
+            }
+        }
+
+        function deleteEntry(type, key) {
+            if (confirm("Delete this entry?")) {
+                const { ref, remove } = window.firebaseRefs || {};
+                remove(ref(window.db, `${type}/${key}`));
+            }
+        }
+
         function renderDashboard() {
             const totalSales = salesEntries.reduce((sum, e) => sum + (e.income || 0), 0);
             const totalBawas = salesEntries.reduce((sum, e) => sum + (e.bawas || 0), 0);
-            const net = totalSales - totalBawas;
-            const savings = savingsEntries.reduce((sum, e) => sum + (e.amount || 0), 0);
+            const netSales = totalSales - totalBawas;
+            const totalSavings = savingsEntries.reduce((sum, e) => sum + (e.amount || 0), 0);
 
             document.getElementById('dash-total-sales').textContent = '₱' + Math.round(totalSales).toLocaleString();
-            document.getElementById('dash-net-sales').textContent = '₱' + Math.round(net).toLocaleString();
-            document.getElementById('dash-total-savings').textContent = '₱' + Math.round(savings).toLocaleString();
-            document.getElementById('dash-net-balance').textContent = '₱' + Math.round(net).toLocaleString();
+            document.getElementById('dash-net-sales').textContent = '₱' + Math.round(netSales).toLocaleString();
+            document.getElementById('dash-total-savings').textContent = '₱' + Math.round(totalSavings).toLocaleString();
+            document.getElementById('dash-net-balance').textContent = '₱' + Math.round(netSales).toLocaleString();
         }
 
         function renderSales() {
-            const tbody = document.getElementById('sales-body');
+            const sorted = [...salesEntries].sort((a,b) => new Date(b.date) - new Date(a.date));
             let html = '';
-            [...salesEntries].sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(e => {
-                const net = (e.income || 0) - (e.bawas || 0);
-                html += `<tr class="hover:bg-zinc-800"><td class="p-5">${new Date(e.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
-                <td class="p-5 text-right text-emerald-400">₱${(e.income||0).toLocaleString()}</td>
-                <td class="p-5 text-right text-orange-400">₱${(e.bawas||0).toLocaleString()}</td>
-                <td class="p-5 text-right font-semibold ${net>=0?'text-cyan-400':'text-red-400'}">₱${net.toLocaleString()}</td>
-                <td class="p-5"><button onclick="deleteEntry('sales','${e.key}')" class="text-red-400"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+            sorted.forEach(entry => {
+                const net = (entry.income || 0) - (entry.bawas || 0);
+                html += `
+                    <tr class="hover:bg-zinc-800">
+                        <td class="p-5">${new Date(entry.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
+                        <td class="p-5 text-right font-mono text-emerald-400">₱${parseFloat(entry.income||0).toLocaleString()}</td>
+                        <td class="p-5 text-right font-mono text-orange-400">₱${parseFloat(entry.bawas||0).toLocaleString()}</td>
+                        <td class="p-5 text-right font-mono ${net>=0?'text-cyan-400':'text-red-400'} font-semibold">₱${net.toLocaleString()}</td>
+                        <td class="p-5 text-center">
+                            <button onclick="deleteEntry('sales','${entry.key}')" class="text-red-400"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
             });
-            tbody.innerHTML = html || `<tr><td colspan="5" class="p-12 text-center text-zinc-500">No sales yet</td></tr>`;
+            document.getElementById('sales-body').innerHTML = html || `<tr><td colspan="5" class="p-12 text-center text-zinc-500">No sales yet</td></tr>`;
         }
 
         function renderUtang() {
             const container = document.getElementById('utang-container');
             const grouped = {};
-            utangEntries.forEach(e => { if (!grouped[e.name]) grouped[e.name] = []; grouped[e.name].push(e); });
+            utangEntries.forEach(e => {
+                if (!grouped[e.name]) grouped[e.name] = [];
+                grouped[e.name].push(e);
+            });
 
             let html = '';
             Object.keys(grouped).sort().forEach(name => {
                 const list = grouped[name];
-                const total = list.reduce((sum, i) => sum + parseFloat(i.amount||0), 0);
-                let rows = list.map(item => `
-                    <div class="flex justify-between bg-zinc-800 p-4 rounded-2xl mb-3">
-                        <div><div class="text-xs text-zinc-400">${new Date(item.date).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div><div>${item.items}</div></div>
-                        <div class="text-right"><div class="font-mono text-pink-400">₱${parseFloat(item.amount).toLocaleString()}</div>
-                        <button onclick="deleteEntry('utang','${item.key}')" class="text-red-400 text-xs">Delete</button></div>
-                    </div>`).join('');
-                html += `<div class="bg-zinc-900 border border-pink-500/30 rounded-3xl p-6">
-                    <div class="flex justify-between mb-4"><h3 class="text-2xl font-bold">${name}</h3><div class="text-right"><div class="text-xs text-pink-400">TOTAL</div><div class="text-3xl font-bold text-pink-400">₱${total.toLocaleString()}</div></div></div>
-                    ${rows}
-                    <div class="grid grid-cols-2 gap-3 mt-6">
-                        <button onclick="addItemTo('${name}')" class="py-4 bg-gradient-to-r from-pink-500 to-cyan-500 rounded-3xl">+ Add Item</button>
-                        <button onclick="markAsPaid('${name}')" class="py-4 border border-emerald-400 text-emerald-400 rounded-3xl">✅ Mark Paid</button>
-                    </div>
-                </div>`;
+                const total = list.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
+                let rows = '';
+                list.forEach(item => {
+                    rows += `
+                        <div class="flex justify-between items-center bg-zinc-800 p-4 rounded-2xl mb-3">
+                            <div>
+                                <div class="text-xs text-zinc-400">${new Date(item.date).toLocaleDateString('en-US',{month:'short', day:'numeric'})}</div>
+                                <div>${item.items}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-mono text-pink-400 font-semibold">₱${parseFloat(item.amount).toLocaleString()}</div>
+                                <button onclick="deleteEntry('utang','${item.key}')" class="text-red-400 text-xs mt-1">Delete</button>
+                            </div>
+                        </div>`;
+                });
+                html += `
+                    <div class="bg-zinc-900 border border-pink-500/30 rounded-3xl p-6">
+                        <div class="flex justify-between mb-4">
+                            <h3 class="text-2xl font-bold">${name}</h3>
+                            <div class="text-right">
+                                <div class="text-xs text-pink-400">TOTAL</div>
+                                <div class="text-3xl font-bold text-pink-400">₱${total.toLocaleString()}</div>
+                            </div>
+                        </div>
+                        ${rows}
+                        <div class="grid grid-cols-2 gap-3 mt-6">
+                            <button onclick="addItemTo('${name}')" class="py-4 bg-gradient-to-r from-pink-500 to-cyan-500 rounded-3xl font-medium">+ Add Item</button>
+                            <button onclick="markAsPaid('${name}')" class="py-4 border border-emerald-400 text-emerald-400 rounded-3xl font-medium">✅ Mark as Paid</button>
+                        </div>
+                    </div>`;
             });
-            container.innerHTML = html || `<p class="text-center text-zinc-500 py-20">No utang yet</p>`;
+            container.innerHTML = html || `<div class="text-center py-20 text-zinc-500">No utang records yet</div>`;
         }
 
         function renderSavings() {
-            const tbody = document.getElementById('savings-body');
+            const sorted = [...savingsEntries].sort((a,b) => new Date(b.date) - new Date(a.date));
             let html = '';
-            [...savingsEntries].sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(e => {
-                html += `<tr class="hover:bg-zinc-800"><td class="p-5">${new Date(e.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
-                <td class="p-5 text-right font-mono text-emerald-400">₱${parseFloat(e.amount||0).toLocaleString()}</td>
-                <td class="p-5 text-center"><button onclick="deleteEntry('savings','${e.key}')" class="text-red-400"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+            sorted.forEach(entry => {
+                html += `
+                    <tr class="hover:bg-zinc-800">
+                        <td class="p-5">${new Date(entry.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
+                        <td class="p-5 text-right font-mono text-emerald-400 font-semibold">₱${parseFloat(entry.amount||0).toLocaleString()}</td>
+                        <td class="p-5 text-center">
+                            <button onclick="deleteEntry('savings','${entry.key}')" class="text-red-400"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
             });
-            tbody.innerHTML = html || `<tr><td colspan="3" class="p-12 text-center text-zinc-500">No savings yet</td></tr>`;
+            document.getElementById('savings-body').innerHTML = html || `<tr><td colspan="3" class="p-12 text-center text-zinc-500">No savings yet</td></tr>`;
         }
 
         function renderAll() {
@@ -210,14 +455,30 @@
         function initFirebase() {
             if (!window.firebaseRefs) return setTimeout(initFirebase, 500);
             const { ref, onValue } = window.firebaseRefs;
-            onValue(ref(window.db, 'sales'), s => { salesEntries = s.exists() ? Object.entries(s.val()).map(([k,v]) => ({key:k, ...v})) : []; renderAll(); });
-            onValue(ref(window.db, 'utang'), s => { utangEntries = s.exists() ? Object.entries(s.val()).map(([k,v]) => ({key:k, ...v})) : []; renderAll(); });
-            onValue(ref(window.db, 'savings'), s => { savingsEntries = s.exists() ? Object.entries(s.val()).map(([k,v]) => ({key:k, ...v})) : []; renderAll(); });
+
+            onValue(ref(window.db, 'sales'), (snapshot) => {
+                salesEntries = snapshot.exists() ? Object.entries(snapshot.val()).map(([key, val]) => ({key, ...val})) : [];
+                renderAll();
+            });
+
+            onValue(ref(window.db, 'utang'), (snapshot) => {
+                utangEntries = snapshot.exists() ? Object.entries(snapshot.val()).map(([key, val]) => ({key, ...val})) : [];
+                renderAll();
+            });
+
+            onValue(ref(window.db, 'savings'), (snapshot) => {
+                savingsEntries = snapshot.exists() ? Object.entries(snapshot.val()).map(([key, val]) => ({key, ...val})) : [];
+                renderAll();
+            });
         }
 
-        // PWA
+        // PWA Service Worker
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('service-worker.js').catch(err => console.log(err));
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(() => console.log('Service Worker Registered'))
+                    .catch(err => console.log('Service Worker Error:', err));
+            });
         }
 
         window.onload = () => {
