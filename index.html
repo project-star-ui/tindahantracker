@@ -37,7 +37,6 @@
             100% { transform: scale(1) translateY(0); opacity: 1; }
         }
         .bottom-nav { box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3); }
-        .utang-card { border: 1px solid #FF0050; }
     </style>
 </head>
 <body class="bg-zinc-950 text-white min-h-screen">
@@ -164,7 +163,9 @@
                 <div id="savings-page" class="page hidden">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl md:text-3xl font-semibold tracking-tighter">Savings</h2>
-                        <div id="total-savings-display" class="font-mono text-2xl md:text-3xl text-emerald-400 font-bold"></div>
+                        <button onclick="quickAdd('savings')" class="px-5 py-3 bg-gradient-to-r from-pink-500 to-cyan-500 rounded-3xl font-semibold flex items-center gap-2">
+                            <i class="fa-solid fa-plus"></i> Add Savings
+                        </button>
                     </div>
                     <div class="bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800">
                         <div class="overflow-x-auto">
@@ -216,7 +217,7 @@
         </div>
     </div>
 
-    <!-- Add/Edit Modal -->
+    <!-- Add Modal -->
     <div id="add-modal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-2xl flex items-center justify-center z-[100] p-4">
         <div class="modal bg-zinc-900 w-full max-w-lg mx-auto rounded-3xl overflow-hidden border border-zinc-700">
             <div class="p-6 md:p-8">
@@ -269,7 +270,7 @@
             const title = document.getElementById('modal-title');
 
             if (type === 'utang') {
-                title.textContent = personName ? "Add Item to " + personName : "New Borrower";
+                title.textContent = personName ? `Add to ${personName}` : "New Borrower";
                 content.innerHTML = `
                     <div class="space-y-8">
                         <div>
@@ -302,7 +303,7 @@
                             <input type="number" id="modal-bawas" value="0" class="w-full bg-zinc-800 border border-zinc-700 rounded-3xl px-6 py-5 text-4xl font-mono">
                         </div>
                     </div>`;
-            } else {
+            } else if (type === 'savings') {
                 title.textContent = "Add Savings";
                 content.innerHTML = `
                     <div class="space-y-8">
@@ -323,14 +324,14 @@
         }
 
         function saveCurrentEntry() {
-            const { ref, push, set } = window.firebaseRefs || {};
-            const date = document.getElementById('modal-date') ? document.getElementById('modal-date').value : getTodayDate();
+            const { ref, push } = window.firebaseRefs || {};
+            const date = getTodayDate();
 
             if (currentModalType === 'utang') {
                 const name = document.getElementById('modal-name').value.trim();
                 const items = document.getElementById('modal-items').value.trim();
                 const amount = parseFloat(document.getElementById('modal-amount').value) || 0;
-                if (!name || !items || amount <= 0) return alert("Fill all fields");
+                if (!name || !items || amount <= 0) return alert("Please fill all fields");
                 push(ref(window.db, 'utang'), { date, name, items, amount });
             } else if (currentModalType === 'sales') {
                 const income = parseFloat(document.getElementById('modal-income').value) || 0;
@@ -354,44 +355,44 @@
             let html = '';
             Object.keys(grouped).sort().forEach(name => {
                 const list = grouped[name];
-                const total = list.reduce((a, b) => a + parseFloat(b.amount), 0);
+                const total = list.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
                 let rows = '';
                 list.forEach(item => {
                     rows += `
-                        <div class="flex justify-between bg-zinc-800 p-3 rounded-2xl mb-2">
+                        <div class="flex justify-between items-center bg-zinc-800 p-4 rounded-2xl mb-3">
                             <div>
-                                <div class="text-xs text-zinc-400">${new Date(item.date).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
-                                <div>${item.items}</div>
+                                <div class="text-xs text-zinc-400">${new Date(item.date).toLocaleDateString('en-US',{month:'short', day:'numeric'})}</div>
+                                <div class="text-zinc-100">${item.items}</div>
                             </div>
                             <div class="text-right">
-                                <div class="font-mono text-pink-400">₱${parseFloat(item.amount).toLocaleString()}</div>
-                                <button onclick="deleteEntry('utang','${item.key}')" class="text-red-400 text-xs">Delete</button>
+                                <div class="font-mono text-pink-400 font-semibold">₱${parseFloat(item.amount).toLocaleString()}</div>
+                                <button onclick="deleteEntry('utang','${item.key}')" class="text-red-400 text-xs mt-1">Delete</button>
                             </div>
                         </div>`;
                 });
                 html += `
-                    <div class="bg-zinc-900 utang-card rounded-3xl p-6">
-                        <div class="flex justify-between items-center mb-4">
+                    <div class="bg-zinc-900 border border-pink-500/30 rounded-3xl p-6">
+                        <div class="flex justify-between mb-4">
                             <h3 class="text-2xl font-bold">${name}</h3>
                             <div class="text-right">
-                                <div class="text-xs tracking-widest text-pink-400">TOTAL</div>
+                                <div class="text-xs text-pink-400">TOTAL</div>
                                 <div class="text-3xl font-bold text-pink-400">₱${total.toLocaleString()}</div>
                             </div>
                         </div>
-                        <div>${rows}</div>
-                        <div class="mt-6 grid grid-cols-2 gap-3">
-                            <button onclick="addItemTo('${name}')" class="py-3 bg-gradient-to-r from-pink-500 to-cyan-500 rounded-3xl">+ Add Item</button>
-                            <button onclick="markAsPaid('${name}')" class="py-3 border border-emerald-400 text-emerald-400 rounded-3xl">✅ Paid</button>
+                        ${rows}
+                        <div class="grid grid-cols-2 gap-3 mt-6">
+                            <button onclick="addItemTo('${name}')" class="py-4 bg-gradient-to-r from-pink-500 to-cyan-500 rounded-3xl font-medium">+ Add Item</button>
+                            <button onclick="markAsPaid('${name}')" class="py-4 border border-emerald-400 text-emerald-400 rounded-3xl font-medium">✅ Mark as Paid</button>
                         </div>
                     </div>`;
             });
-            container.innerHTML = html || `<p class="text-center text-zinc-500 py-20">No utang yet</p>`;
+            container.innerHTML = html || `<div class="text-center py-20 text-zinc-500">No utang records yet</div>`;
         }
 
         function addItemTo(name) { showAddModal('utang', name); }
 
         function markAsPaid(name) {
-            if (confirm(`Mark all as paid for ${name}?`)) {
+            if (confirm(`Mark all utang of ${name} as PAID?`)) {
                 const toDelete = utangEntries.filter(e => e.name === name);
                 const { ref, remove } = window.firebaseRefs;
                 toDelete.forEach(e => remove(ref(window.db, `utang/${e.key}`)));
@@ -399,46 +400,57 @@
         }
 
         function deleteEntry(type, key) {
-            if (confirm("Delete?")) {
+            if (confirm("Delete this entry?")) {
                 const { ref, remove } = window.firebaseRefs;
                 remove(ref(window.db, `${type}/${key}`));
             }
         }
 
         function renderDashboard() {
-            const income = salesEntries.reduce((s,e)=>s+(e.income||0),0);
-            const bawas = salesEntries.reduce((s,e)=>s+(e.bawas||0),0);
-            const net = income - bawas;
-            const savings = savingsEntries.reduce((s,e)=>s+(e.amount||0),0);
+            const totalSales = salesEntries.reduce((sum, e) => sum + (e.income || 0), 0);
+            const totalBawas = salesEntries.reduce((sum, e) => sum + (e.bawas || 0), 0);
+            const netSales = totalSales - totalBawas;
+            const totalSavings = savingsEntries.reduce((sum, e) => sum + (e.amount || 0), 0);
 
-            document.getElementById('dash-total-sales').textContent = '₱'+Math.round(income).toLocaleString();
-            document.getElementById('dash-net-sales').textContent = '₱'+Math.round(net).toLocaleString();
-            document.getElementById('dash-total-savings').textContent = '₱'+Math.round(savings).toLocaleString();
-            document.getElementById('dash-net-balance').textContent = '₱'+Math.round(net).toLocaleString();
+            document.getElementById('dash-total-sales').textContent = '₱' + Math.round(totalSales).toLocaleString();
+            document.getElementById('dash-net-sales').textContent = '₱' + Math.round(netSales).toLocaleString();
+            document.getElementById('dash-total-savings').textContent = '₱' + Math.round(totalSavings).toLocaleString();
+            document.getElementById('dash-net-balance').textContent = '₱' + Math.round(netSales).toLocaleString();
         }
 
         function renderSales() {
-            const tbody = document.getElementById('sales-body');
+            const sorted = [...salesEntries].sort((a,b) => new Date(b.date) - new Date(a.date));
             let html = '';
-            [...salesEntries].sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(e => {
-                const net = (e.income||0) - (e.bawas||0);
-                html += `<tr class="hover:bg-zinc-800">
-                    <td class="p-5">${new Date(e.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
-                    <td class="p-5 text-right text-emerald-400">₱${(e.income||0).toLocaleString()}</td>
-                    <td class="p-5 text-right text-orange-400">₱${(e.bawas||0).toLocaleString()}</td>
-                    <td class="p-5 text-right font-semibold ${net>=0?'text-cyan-400':'text-red-400'}">₱${net.toLocaleString()}</td>
-                    <td class="p-5 text-center">
-                        <button onclick="deleteEntry('sales','${e.key}')" class="text-red-400"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>`;
+            sorted.forEach(entry => {
+                const net = (entry.income || 0) - (entry.bawas || 0);
+                html += `
+                    <tr class="hover:bg-zinc-800">
+                        <td class="p-5">${new Date(entry.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
+                        <td class="p-5 text-right font-mono text-emerald-400">₱${parseFloat(entry.income||0).toLocaleString()}</td>
+                        <td class="p-5 text-right font-mono text-orange-400">₱${parseFloat(entry.bawas||0).toLocaleString()}</td>
+                        <td class="p-5 text-right font-mono ${net >= 0 ? 'text-cyan-400' : 'text-red-400'} font-semibold">₱${net.toLocaleString()}</td>
+                        <td class="p-5 text-center">
+                            <button onclick="deleteEntry('sales','${entry.key}')" class="text-red-400"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
             });
-            tbody.innerHTML = html || `<tr><td colspan="5" class="p-12 text-center text-zinc-500">No sales yet</td></tr>`;
+            document.getElementById('sales-body').innerHTML = html || `<tr><td colspan="5" class="p-12 text-center text-zinc-500">No sales yet</td></tr>`;
         }
 
         function renderSavings() {
-            let total = savingsEntries.reduce((s,e)=>s+(e.amount||0),0);
-            document.getElementById('total-savings-display').textContent = '₱'+Math.round(total).toLocaleString();
-            // table render omitted for brevity - you can expand if needed
+            const sorted = [...savingsEntries].sort((a,b) => new Date(b.date) - new Date(a.date));
+            let html = '';
+            sorted.forEach(entry => {
+                html += `
+                    <tr class="hover:bg-zinc-800">
+                        <td class="p-5">${new Date(entry.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
+                        <td class="p-5 text-right font-mono text-emerald-400 font-semibold">₱${parseFloat(entry.amount||0).toLocaleString()}</td>
+                        <td class="p-5 text-center">
+                            <button onclick="deleteEntry('savings','${entry.key}')" class="text-red-400"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+            });
+            document.getElementById('savings-body').innerHTML = html || `<tr><td colspan="3" class="p-12 text-center text-zinc-500">No savings yet</td></tr>`;
         }
 
         function renderAll() {
@@ -451,13 +463,23 @@
         function initFirebase() {
             if (!window.firebaseRefs) return setTimeout(initFirebase, 500);
             const { ref, onValue } = window.firebaseRefs;
-            onValue(ref(window.db, 'sales'), s => { salesEntries = s.exists() ? Object.entries(s.val()).map(([k,v])=>({key:k,...v})) : []; renderAll(); });
-            onValue(ref(window.db, 'utang'), s => { utangEntries = s.exists() ? Object.entries(s.val()).map(([k,v])=>({key:k,...v})) : []; renderAll(); });
-            onValue(ref(window.db, 'savings'), s => { savingsEntries = s.exists() ? Object.entries(s.val()).map(([k,v])=>({key:k,...v})) : []; renderAll(); });
+
+            onValue(ref(window.db, 'sales'), snap => {
+                salesEntries = snap.exists() ? Object.entries(snap.val()).map(([k,v]) => ({key: k, ...v})) : [];
+                renderAll();
+            });
+            onValue(ref(window.db, 'utang'), snap => {
+                utangEntries = snap.exists() ? Object.entries(snap.val()).map(([k,v]) => ({key: k, ...v})) : [];
+                renderAll();
+            });
+            onValue(ref(window.db, 'savings'), snap => {
+                savingsEntries = snap.exists() ? Object.entries(snap.val()).map(([k,v]) => ({key: k, ...v})) : [];
+                renderAll();
+            });
         }
 
         window.onload = () => {
-            document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'});
+            document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
             navigateTo('dashboard');
             initFirebase();
         };
